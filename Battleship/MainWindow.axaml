@@ -5,17 +5,19 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Battleship.MainWindow"
         Title="Потапање бродова"
-        Background="#070F2B">
+        Background="#070F2B"
+        Width="1460"
+        Height="680">
     <StackPanel Orientation="Horizontal">
         <Border BorderBrush="#FAEF5D"
                 BorderThickness="0, 0, 1, 0">
             <StackPanel Width="300"
-                        Spacing="50">
+                        Spacing="30">
                 <Button Width="200"
                         HorizontalAlignment="Center"
                         HorizontalContentAlignment="Center"
                         Cursor="Hand"
-                        Margin="0, 50, 0, 0">
+                        Margin="0, 40, 0, 0">
                     Играј против левог бота
                 </Button>
                 <Button Width="200"
@@ -30,11 +32,54 @@
                         Cursor="Hand">
                     Бот против бота
                 </Button>
+                <StackPanel HorizontalAlignment="Center"
+                            Margin="0, 100, 0, 0"
+                            Spacing="25">
+                    <TextBlock HorizontalAlignment="Center"
+                               FontSize="20">
+                        Легенда
+                    </TextBlock>
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="10">
+                        <Rectangle Fill="Yellow"
+                                   Height="30"
+                                   Width="30">
+                        </Rectangle>
+                        <TextBlock VerticalAlignment="Center">
+                            - овакво поље
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
             </StackPanel>
         </Border>
-        <StackPanel Width="500">
-        </StackPanel>
-        <StackPanel Width="300">
-        </StackPanel>
+        <Border BorderBrush="#FAEF5D"
+                BorderThickness="0, 0, 1, 0">
+            <StackPanel>
+                <Border Height="60"
+                        BorderBrush="#FAEF5D"
+                        BorderThickness="0, 0, 0, 1">
+                    <TextBlock HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                        Име играча 1
+                    </TextBlock>
+                </Border>
+                <Grid x:Name="LeftBoard"
+                        Margin="40, 60, 40, 0">
+                </Grid>
+            </StackPanel>
+        </Border>
+        <StackPanel>
+                <Border Height="60"
+                        BorderBrush="#FAEF5D"
+                        BorderThickness="0, 0, 0, 1">
+                    <TextBlock HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                        Име играча 2
+                    </TextBlock>
+                </Border>
+                <Grid x:Name="RightBoard"
+                        Margin="40, 60, 40, 0">
+                </Grid>
+            </StackPanel>
     </StackPanel>
 </Window>
