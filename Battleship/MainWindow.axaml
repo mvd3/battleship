@@ -1,0 +1,40 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Battleship.MainWindow"
+        Title="Потапање бродова"
+        Background="#070F2B">
+    <StackPanel Orientation="Horizontal">
+        <Border BorderBrush="#FAEF5D"
+                BorderThickness="0, 0, 1, 0">
+            <StackPanel Width="300"
+                        Spacing="50">
+                <Button Width="200"
+                        HorizontalAlignment="Center"
+                        HorizontalContentAlignment="Center"
+                        Cursor="Hand"
+                        Margin="0, 50, 0, 0">
+                    Играј против левог бота
+                </Button>
+                <Button Width="200"
+                        HorizontalAlignment="Center"
+                        HorizontalContentAlignment="Center"
+                        Cursor="Hand">
+                    Играј против десног бота
+                </Button>
+                <Button Width="200"
+                        HorizontalAlignment="Center"
+                        HorizontalContentAlignment="Center"
+                        Cursor="Hand">
+                    Бот против бота
+                </Button>
+            </StackPanel>
+        </Border>
+        <StackPanel Width="500">
+        </StackPanel>
+        <StackPanel Width="300">
+        </StackPanel>
+    </StackPanel>
+</Window>
