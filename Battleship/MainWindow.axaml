@@ -17,19 +17,25 @@
                         HorizontalAlignment="Center"
                         HorizontalContentAlignment="Center"
                         Cursor="Hand"
-                        Margin="0, 40, 0, 0">
+                        Margin="0, 40, 0, 0"
+                        Tag="0"
+                        Click="StartGame">
                     Играј против левог бота
                 </Button>
                 <Button Width="200"
                         HorizontalAlignment="Center"
                         HorizontalContentAlignment="Center"
-                        Cursor="Hand">
+                        Cursor="Hand"
+                        Tag="1"
+                        Click="StartGame">
                     Играј против десног бота
                 </Button>
                 <Button Width="200"
                         HorizontalAlignment="Center"
                         HorizontalContentAlignment="Center"
-                        Cursor="Hand">
+                        Cursor="Hand"
+                        Tag="2"
+                        Click="StartGame">
                     Бот против бота
                 </Button>
                 <StackPanel HorizontalAlignment="Center"
@@ -39,14 +45,54 @@
                                FontSize="20">
                         Легенда
                     </TextBlock>
-                    <StackPanel Orientation="Horizontal"
+                    <StackPanel Orientation="Horizontal" 
                                 Spacing="10">
-                        <Rectangle Fill="Yellow"
+                        <Rectangle Fill="#1D24CA"
                                    Height="30"
                                    Width="30">
                         </Rectangle>
                         <TextBlock VerticalAlignment="Center">
-                            - овакво поље
+                            - негађано поље
+                        </TextBlock>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" 
+                                Spacing="10">
+                        <Rectangle Fill="#1F2544"
+                                   Height="30"
+                                   Width="30">
+                        </Rectangle>
+                        <TextBlock VerticalAlignment="Center">
+                            - промашено поље
+                        </TextBlock>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" 
+                                Spacing="10">
+                        <Rectangle Fill="#FC6736"
+                                   Height="30"
+                                   Width="30">
+                        </Rectangle>
+                        <TextBlock VerticalAlignment="Center">
+                            - оштећен брод
+                        </TextBlock>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" 
+                                Spacing="10">
+                        <Rectangle Fill="#FF004D"
+                                   Height="30"
+                                   Width="30">
+                        </Rectangle>
+                        <TextBlock VerticalAlignment="Center">
+                            - уништен брод
+                        </TextBlock>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" 
+                                Spacing="10">
+                        <Rectangle Fill="#EAD7BB"
+                                   Height="30"
+                                   Width="30">
+                        </Rectangle>
+                        <TextBlock VerticalAlignment="Center">
+                            - брод
                         </TextBlock>
                     </StackPanel>
                 </StackPanel>
@@ -58,9 +104,9 @@
                 <Border Height="60"
                         BorderBrush="#FAEF5D"
                         BorderThickness="0, 0, 0, 1">
-                    <TextBlock HorizontalAlignment="Center"
-                            VerticalAlignment="Center">
-                        Име играча 1
+                    <TextBlock x:Name="LeftPlayerInfo"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center">
                     </TextBlock>
                 </Border>
                 <Grid x:Name="LeftBoard"
@@ -72,9 +118,9 @@
                 <Border Height="60"
                         BorderBrush="#FAEF5D"
                         BorderThickness="0, 0, 0, 1">
-                    <TextBlock HorizontalAlignment="Center"
-                            VerticalAlignment="Center">
-                        Име играча 2
+                    <TextBlock x:Name="RightPlayerInfo"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center">
                     </TextBlock>
                 </Border>
                 <Grid x:Name="RightBoard"
