@@ -19,7 +19,8 @@
                         Cursor="Hand"
                         Margin="0, 40, 0, 0"
                         Tag="0"
-                        Click="StartGame">
+                        Click="StartGame"
+                        x:Name="VersusLeftBot">
                     Играј против левог бота
                 </Button>
                 <Button Width="200"
@@ -27,7 +28,8 @@
                         HorizontalContentAlignment="Center"
                         Cursor="Hand"
                         Tag="1"
-                        Click="StartGame">
+                        Click="StartGame"
+                        x:Name="VersusRightBot">
                     Играј против десног бота
                 </Button>
                 <Button Width="200"
@@ -35,7 +37,8 @@
                         HorizontalContentAlignment="Center"
                         Cursor="Hand"
                         Tag="2"
-                        Click="StartGame">
+                        Click="StartGame"
+                        x:Name="BotVersusBot">
                     Бот против бота
                 </Button>
                 <StackPanel HorizontalAlignment="Center"

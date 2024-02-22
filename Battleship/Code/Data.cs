@@ -13,18 +13,4 @@ public static class Data
     public const string LEFT_DEFAULT_PLAYER = "Обреновићи";
     public const string RIGHT_DEFAULT_PLAYER = "Карађорђевићи";
     public const string HUMAN_PLAYER = "Играч";
-    public enum GameType
-    {
-        PlayerVersusLeftBot,
-        PlayerVersusRightBot,
-        BotVersusBot
-    };
-    public enum FieldState
-    {
-        Empty,
-        Ship,
-        Damaged,
-        Destroyed,
-        Missed
-    }
 }

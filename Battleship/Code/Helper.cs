@@ -3,6 +3,22 @@ using System.Linq;
 
 namespace Battleship.Platform.Helper;
 
+public enum GameType
+{
+    PlayerVersusLeftBot,
+    PlayerVersusRightBot,
+    BotVersusBot
+};
+
+public enum FieldState
+{
+    Empty,
+    Ship,
+    Damaged,
+    Destroyed,
+    Missed
+}
+
 public readonly struct Coordinate
 {
     public int X { get; init; }
@@ -20,4 +36,10 @@ public class Ship
         IsDestroyed = false;
         Position = [];
     }
+}
+
+public class Field
+{
+    public FieldState State { get; set; }
+    public bool IsAvailable { get; set;} // For shooting
 }

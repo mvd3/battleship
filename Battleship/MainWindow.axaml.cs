@@ -3,6 +3,7 @@ using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Battleship.Platform;
+using Battleship.Platform.Helper;
 
 namespace Battleship;
 
@@ -12,6 +13,7 @@ public partial class MainWindow : Window
     private Grid? _leftBoardGrid, _rightBoardGrid;
     private TextBlock? _leftPlayerInfo, _rightPlayerInfo;
     private Button[,] _leftBoardButtons, _rightBoardButtons;
+    private Button? _versusLeftBot, _versusRightBot, _botVersusBot;
     
     public MainWindow()
     {
@@ -36,6 +38,9 @@ public partial class MainWindow : Window
         _rightBoardGrid = this.FindControl<Grid>("RightBoard");
         _leftPlayerInfo = this.FindControl<TextBlock>("LeftPlayerInfo");
         _rightPlayerInfo = this.FindControl<TextBlock>("RightPlayerInfo");
+        _versusLeftBot = this.FindControl<Button>("VersusLeftBot");
+        _versusRightBot = this.FindControl<Button>("VersusRightBot");
+        _botVersusBot = this.FindControl<Button>("BotVersusBot");
 
         if (_leftBoardGrid == null 
             || _rightBoardGrid == null
@@ -78,31 +83,6 @@ public partial class MainWindow : Window
                 Grid.SetColumn(button, j);
                 grid.Children.Add(button);
 
-                if (i == 5 && j == 5)
-                {
-                    button.Classes.Clear();
-                    button.Classes.Add("NoHoverClickEffect");
-                    button.Background = new SolidColorBrush(Color.Parse(Data.DESTROYED_SHIP_BACKGROUND_COLOR_HEX));
-                }
-                if (i == 3 && j == 3)
-                {
-                    button.Classes.Clear();
-                    button.Classes.Add("NoHoverClickEffect");
-                    button.Background = new SolidColorBrush(Color.Parse(Data.DAMAGED_SHIP_BACKGROUND_COLOR_HEX));
-                }
-                if (i == 7 && j == 7)
-                {
-                    button.Classes.Clear();
-                    button.Classes.Add("NoHoverClickEffect");
-                    button.Background = new SolidColorBrush(Color.Parse(Data.MISS_BACKGROUND_COLOR_HEX));
-                }
-                if (i == 4 && j > 4 && j < 8)
-                {
-                    button.Classes.Clear();
-                    button.Classes.Add("NoHoverClickEffect");
-                    button.Background = new SolidColorBrush(Color.Parse(Data.SHIP_BACKGROUND_COLOR_HEX));
-                }
-
                 buttons[i, j] = button;
             }
         }
@@ -114,36 +94,52 @@ public partial class MainWindow : Window
             || _rightBoardGrid == null
             || _leftPlayerInfo == null
             || _rightPlayerInfo == null
+            || _versusLeftBot == null
+            || _versusRightBot == null
+            || _botVersusBot == null
             || args.Source == null)
             return;
         
         Button button = (Button) args.Source;
-        Data.GameType mode = (Data.GameType) int.Parse(button.Tag?.ToString() ?? "-1");
+        GameType mode = (GameType) int.Parse(button.Tag?.ToString() ?? "-1");
 
         _platform.StartGame(mode);
         ClearField(_leftBoardButtons);
         ClearField(_rightBoardButtons);
 
+        _versusLeftBot.IsEnabled = false;
+        _versusRightBot.IsEnabled = false;
+        _botVersusBot.IsEnabled = false;
+
+        SetShipsOnField(_leftBoardButtons, _platform.GetAllShipPositions());
+
         switch (mode)
         {
-            case Data.GameType.PlayerVersusLeftBot:
-            case Data.GameType.PlayerVersusRightBot:
+            case GameType.PlayerVersusLeftBot:
+            case GameType.PlayerVersusRightBot:
             {
                 _rightBoardGrid.IsEnabled = true;
                 _leftPlayerInfo.Text = Data.HUMAN_PLAYER;
-                _rightPlayerInfo.Text = mode == Data.GameType.PlayerVersusLeftBot ? _platform.GetLeftBotName() : _platform.GetRightBotName();
+                _rightPlayerInfo.Text = mode == GameType.PlayerVersusLeftBot ? _platform.GetLeftBotName() : _platform.GetRightBotName();
                 break;
             }
-            case Data.GameType.BotVersusBot:
+            case GameType.BotVersusBot:
             {
                 _leftBoardGrid.IsEnabled = false;
                 _rightBoardGrid.IsEnabled = false;
                 _leftPlayerInfo.Text = _platform.GetLeftBotName();
                 _rightPlayerInfo.Text = _platform.GetRightBotName();
+
+                SetShipsOnField(_rightBoardButtons, _platform.GetAllShipPositions(false));
+                BotVersusBotMatch();
                 break;
             }
             default: break;
         };
+
+        _versusLeftBot.IsEnabled = true;
+        _versusRightBot.IsEnabled = true;
+        _botVersusBot.IsEnabled = true;
     }
 
     private static void ClearField(Button[,] buttons)
@@ -153,5 +149,19 @@ public partial class MainWindow : Window
             button.Classes.Clear();
             button.Background = new SolidColorBrush(Color.Parse(Data.REGULAR_FIELD_BACKGROUND_COLOR_HEX));
         }
+    }
+
+    private static void SetShipsOnField(Button[,] board, Coordinate[] shipPositions)
+    {
+        foreach (Coordinate coordinate in shipPositions)
+        {
+            board[coordinate.X, coordinate.Y].Classes.Add("NoHoverClickEffect");
+            board[coordinate.X, coordinate.Y].Background = new SolidColorBrush(Color.Parse(Data.SHIP_BACKGROUND_COLOR_HEX));
+        }
+    }
+    
+    private void BotVersusBotMatch()
+    {
+
     }
 }
