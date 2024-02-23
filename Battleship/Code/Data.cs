@@ -4,6 +4,7 @@ public static class Data
 {
     public const int TABLE_SIZE = 10;
     public const int NUMBER_OF_SHIPS = 5;
+    public const int BOT_DELAY_TIME_MS = 10;
     public const string BORDER_COLOR_HEX = "#FAEF5D";
     public const string REGULAR_FIELD_BACKGROUND_COLOR_HEX = "#1D24CA";
     public const string DESTROYED_SHIP_BACKGROUND_COLOR_HEX = "#FF004D";

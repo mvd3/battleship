@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Battleship.Platform.Bot;
 using Battleship.Platform.Helper;
 
@@ -7,7 +8,7 @@ namespace Battleship.Platform;
 
 public class Platform
 {
-    private Field[,] _leftBoard, _rightBoard;
+    private FieldState[,] _leftBoard, _rightBoard;
     private Ship[] _leftPlayerShips, _rightPlayerShips;
     private Random _randomNumberGenerator;
     private NBot _leftBot, _rightBot;
@@ -18,8 +19,8 @@ public class Platform
 
     public Platform()
     {
-        _leftBoard = new Field[Data.TABLE_SIZE, Data.TABLE_SIZE];
-        _rightBoard = new Field[Data.TABLE_SIZE, Data.TABLE_SIZE];
+        _leftBoard = new FieldState[Data.TABLE_SIZE, Data.TABLE_SIZE];
+        _rightBoard = new FieldState[Data.TABLE_SIZE, Data.TABLE_SIZE];
         _leftPlayerShips = new Ship[Data.NUMBER_OF_SHIPS];
         _rightPlayerShips = new Ship[Data.NUMBER_OF_SHIPS];
         _randomNumberGenerator = new();
@@ -36,20 +37,12 @@ public class Platform
         for (int i = 0; i < Data.TABLE_SIZE; ++i)
             for (int j = 0; j < Data.TABLE_SIZE; ++j)
             {
-                _leftBoard[i, j] = new()
-                {
-                    State = FieldState.Empty,
-                    IsAvailable = true
-                };
-                _rightBoard[i, j] = new()
-                {
-                    State = FieldState.Empty,
-                    IsAvailable = true
-                };
+                _leftBoard[i, j] = FieldState.Empty;
+                _rightBoard[i, j] = FieldState.Empty;
             }
 
-        _leftPlayerShips = ArrangeShipsOnBoard(ref _leftBoard);
-        _rightPlayerShips = ArrangeShipsOnBoard(ref _rightBoard);
+        _leftPlayerShips = ArrangeShipsOnBoard();
+        _rightPlayerShips = ArrangeShipsOnBoard();
 
         _currentlyPlaying = true;
     }
@@ -66,12 +59,47 @@ public class Platform
     
     public (Coordinate, FieldState) BotNextMove(bool isLeftBot = true, bool botVersusBot = false)
     {
-        Coordinate coordinate = GetFirstEmptyField(isLeftBot && botVersusBot ? _leftBoard : _rightBoard);
+        FieldState[,] board = botVersusBot && isLeftBot ? _rightBoard : _leftBoard;
+        Ship[] ships = botVersusBot && isLeftBot ? _rightPlayerShips : _leftPlayerShips;
+
+        Coordinate coordinate = isLeftBot ? _leftBot.NextPosition(board, ships) : _rightBot.NextPosition(board, ships);
         FieldState fieldState = FieldState.Missed;
 
-        coordinate = isLeftBot 
-            ? _leftBot.NextPosition(botVersusBot ? _rightBoard : _leftBoard, botVersusBot ? _rightPlayerShips : _leftPlayerShips) 
-            : _rightBot.NextPosition(_leftBoard, _leftPlayerShips);
+        if (board[coordinate.X, coordinate.Y] != FieldState.Empty)
+            coordinate = GetFirstEmptyField(board);
+
+        bool isHit = false;
+
+        foreach (Ship ship in ships)
+        {
+            if (ship.Position.Contains(coordinate))
+            {
+                isHit = true;
+                break;
+            }
+        }
+
+        if (isHit)
+        {
+            fieldState = FieldState.Damaged;
+
+            foreach (Ship ship in ships)
+                if (ship.Position.Contains(coordinate))
+                {
+                    if (--ship.FieldsUndamaged == 0)
+                    {
+                        fieldState = FieldState.Destroyed;
+
+                        foreach (Coordinate shipCoordinate in ship.Position)
+                            board[shipCoordinate.X, shipCoordinate.Y] = fieldState;
+                    }
+                    else
+                        board[coordinate.X, coordinate.Y] = fieldState;
+
+                    break;
+                }
+        } else
+            board[coordinate.X, coordinate.Y] = fieldState;
 
         return (coordinate, fieldState);
     }
@@ -86,11 +114,43 @@ public class Platform
         return [.. shipPositions];
     }
 
-    private Ship[] ArrangeShipsOnBoard(ref Field[,] board)
+    public Coordinate[] GetPositionOfDestroyedShipAndRemoveShip(bool leftPlayer = true)
     {
+        Coordinate[] position = [];
+
+        List<Ship> ships = new(leftPlayer ? _leftPlayerShips : _rightPlayerShips);
+
+        for (int i = 0; i < ships.Count; ++i)
+        {
+            if (ships[i].FieldsUndamaged == 0)
+            {
+                position = [.. ships[i].Position];
+                ships.RemoveAt(i);
+
+                break;
+            }
+        }
+
+        if (leftPlayer)
+            _leftPlayerShips = [.. ships];
+        else
+            _rightPlayerShips = [.. ships];
+
+        return position;
+    }
+
+    private Ship[] ArrangeShipsOnBoard()
+    {
+        FieldState[,] board = new FieldState[Data.TABLE_SIZE, Data.TABLE_SIZE];
         Ship[] ships = new Ship[Data.NUMBER_OF_SHIPS];
         int x, y, orientation;
         int shipIndex = 0;
+
+        for (int i = 0; i < Data.TABLE_SIZE; ++i)
+            for (int j = 0; j < Data.TABLE_SIZE; ++j)
+            {
+                board[i, j] = FieldState.Empty;
+            }
 
         foreach(int shipLength in _shipSize)
         {
@@ -109,7 +169,7 @@ public class Platform
                 bool allFieldsAreEmpty = true;
 
                 for (int i = 0; i < shipLength; ++i)
-                    if (board[x + i * _orientationSpaningFactorX[orientation], y + i * _orientationSpaningFactorY[orientation]].State != FieldState.Empty)
+                    if (board[x + i * _orientationSpaningFactorX[orientation], y + i * _orientationSpaningFactorY[orientation]] != FieldState.Empty)
                     {
                         allFieldsAreEmpty = false;
                         break;
@@ -119,14 +179,14 @@ public class Platform
                     continue;
 
                 // This condition reduces grouping of ships, it checks if there is any ship in neighbour cells 
-                if ((x > 0 && board[x - 1, y].State == FieldState.Ship)
-                    || (x < Data.TABLE_SIZE - 1 && board[x + 1, y].State == FieldState.Ship)
-                    || (y > 0 && board[x, y - 1].State == FieldState.Ship)
-                    || (y < Data.TABLE_SIZE - 1 && board[x, y + 1].State == FieldState.Ship)
-                    || (x > 0 && y > 0 && board[x - 1, y - 1].State == FieldState.Ship)
-                    || (x > 0 && y < Data.TABLE_SIZE - 1 && board[x - 1, y + 1].State == FieldState.Ship)
-                    || (x < Data.TABLE_SIZE - 1 && y > 0 && board[x + 1, y - 1].State == FieldState.Ship)
-                    || (x < Data.TABLE_SIZE - 1 && y < Data.TABLE_SIZE - 1 && board[x + 1, y + 1].State == FieldState.Ship))
+                if ((x > 0 && board[x - 1, y] == FieldState.Ship)
+                    || (x < Data.TABLE_SIZE - 1 && board[x + 1, y] == FieldState.Ship)
+                    || (y > 0 && board[x, y - 1] == FieldState.Ship)
+                    || (y < Data.TABLE_SIZE - 1 && board[x, y + 1] == FieldState.Ship)
+                    || (x > 0 && y > 0 && board[x - 1, y - 1] == FieldState.Ship)
+                    || (x > 0 && y < Data.TABLE_SIZE - 1 && board[x - 1, y + 1] == FieldState.Ship)
+                    || (x < Data.TABLE_SIZE - 1 && y > 0 && board[x + 1, y - 1] == FieldState.Ship)
+                    || (x < Data.TABLE_SIZE - 1 && y < Data.TABLE_SIZE - 1 && board[x + 1, y + 1] == FieldState.Ship))
                     continue;
 
                 List<Coordinate> positionList = [];
@@ -139,13 +199,13 @@ public class Platform
                         Y = y + i * _orientationSpaningFactorY[orientation]
                     };
                     
-                    board[coordinate.X, coordinate.Y].State = FieldState.Ship;
+                    board[coordinate.X, coordinate.Y] = FieldState.Ship;
                     positionList.Add(coordinate);
                 }
 
                 ships[shipIndex++] = new()
                 {
-                    IsDestroyed = false,
+                    FieldsUndamaged = shipLength,
                     Size = shipLength,
                     Position = positionList
                 };
@@ -157,11 +217,11 @@ public class Platform
         return ships;
     }
 
-    private static Coordinate GetFirstEmptyField(Field[,] board)
+    private static Coordinate GetFirstEmptyField(FieldState[,] board)
     {
         for (int i = 0; i < Data.TABLE_SIZE; ++i)
             for (int j = 0; j < Data.TABLE_SIZE; ++j)
-                if (board[i, j].IsAvailable)
+                if (board[i, j] == FieldState.Empty)
                     return new Coordinate
                     {
                         X = i,

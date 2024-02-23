@@ -28,12 +28,11 @@ public readonly struct Coordinate
 public class Ship
 {
     public int Size { get; init; }
-    public bool IsDestroyed { get; set; }
+    public int FieldsUndamaged { get; set; }
     public List<Coordinate> Position { get; set; }
 
     public Ship()
     {
-        IsDestroyed = false;
         Position = [];
     }
 }

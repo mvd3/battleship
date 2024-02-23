@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
@@ -27,7 +28,7 @@ public partial class MainWindow : Window
         DrawBoards();
     }
 
-        private void InitializeComponent()
+    private void InitializeComponent()
     {
         AvaloniaXamlLoader.Load(this);
     }
@@ -88,7 +89,7 @@ public partial class MainWindow : Window
         }
     }
  
-    public void StartGame(object sender, RoutedEventArgs args)
+    public async void StartGame(object sender, RoutedEventArgs args)
     {
         if (_leftBoardGrid == null
             || _rightBoardGrid == null
@@ -104,8 +105,8 @@ public partial class MainWindow : Window
         GameType mode = (GameType) int.Parse(button.Tag?.ToString() ?? "-1");
 
         _platform.StartGame(mode);
-        ClearField(_leftBoardButtons);
-        ClearField(_rightBoardButtons);
+        ClearBoard(_leftBoardButtons);
+        ClearBoard(_rightBoardButtons);
 
         _versusLeftBot.IsEnabled = false;
         _versusRightBot.IsEnabled = false;
@@ -131,7 +132,7 @@ public partial class MainWindow : Window
                 _rightPlayerInfo.Text = _platform.GetRightBotName();
 
                 SetShipsOnField(_rightBoardButtons, _platform.GetAllShipPositions(false));
-                BotVersusBotMatch();
+                await BotVersusBotMatch();
                 break;
             }
             default: break;
@@ -142,12 +143,13 @@ public partial class MainWindow : Window
         _botVersusBot.IsEnabled = true;
     }
 
-    private static void ClearField(Button[,] buttons)
+    private static void ClearBoard(Button[,] buttons)
     {
         foreach (Button button in buttons)
         {
             button.Classes.Clear();
             button.Background = new SolidColorBrush(Color.Parse(Data.REGULAR_FIELD_BACKGROUND_COLOR_HEX));
+            button.IsEnabled = true;
         }
     }
 
@@ -160,8 +162,69 @@ public partial class MainWindow : Window
         }
     }
     
-    private void BotVersusBotMatch()
+    private async Task BotVersusBotMatch()
     {
+        Coordinate coordinate;
+        FieldState fieldState;
 
+        for (int i = 0; i < 100; ++i)
+        {
+            (coordinate, fieldState) = _platform.BotNextMove(true, true);
+            /*
+            if (fieldState == FieldState.Destroyed)
+                MarkShipAsDestroyed(_rightBoardButtons);
+            else
+                ChangeFieldState(_rightBoardButtons, coordinate, fieldState);
+            //*/
+            ChangeFieldState(_rightBoardButtons, coordinate, fieldState);
+
+            //await Task.Delay(Data.BOT_DELAY_TIME_MS);
+
+            (coordinate, fieldState) = _platform.BotNextMove(false, true);
+            /*
+            if (fieldState == FieldState.Destroyed)
+                MarkShipAsDestroyed(_leftBoardButtons, false);
+            else
+                ChangeFieldState(_leftBoardButtons, coordinate, fieldState);
+            //*/
+            ChangeFieldState(_leftBoardButtons, coordinate, fieldState);
+
+            await Task.Delay(Data.BOT_DELAY_TIME_MS);
+
+        }
+    }
+
+    private static void ChangeFieldState(Button[,] board, Coordinate coordinate, FieldState fieldState)
+    {
+        board[coordinate.X, coordinate.Y].Classes.Add("NoHoverClickEffect");
+        board[coordinate.X, coordinate.Y].IsEnabled = false;
+
+        IBrush color = new SolidColorBrush(Color.Parse(Data.MISS_BACKGROUND_COLOR_HEX));
+
+        switch(fieldState)
+        {
+            case FieldState.Damaged:
+            {
+                color = new SolidColorBrush(Color.Parse(Data.DAMAGED_SHIP_BACKGROUND_COLOR_HEX));
+                break;
+            }
+            case FieldState.Destroyed:
+            {
+                color = new SolidColorBrush(Color.Parse(Data.DESTROYED_SHIP_BACKGROUND_COLOR_HEX));
+                break;
+            }
+        }
+
+        board[coordinate.X, coordinate.Y].Background = color;
+    }
+
+    private void MarkShipAsDestroyed(Button[,] board, bool defaultLeft = true)
+    {
+        Coordinate[] coordinates = _platform.GetPositionOfDestroyedShipAndRemoveShip(defaultLeft);
+
+        foreach(Coordinate coordinate in coordinates)
+        {
+            ChangeFieldState(board, coordinate, FieldState.Destroyed);
+        }
     }
 }
