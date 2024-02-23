@@ -114,27 +114,13 @@ public class Platform
         return [.. shipPositions];
     }
 
-    public Coordinate[] GetPositionOfDestroyedShipAndRemoveShip(bool leftPlayer = true)
+    public Coordinate[] GetPositionOfDestroyedShip(Coordinate coordinate, bool leftPlayer = true)
     {
         Coordinate[] position = [];
 
-        List<Ship> ships = new(leftPlayer ? _leftPlayerShips : _rightPlayerShips);
-
-        for (int i = 0; i < ships.Count; ++i)
-        {
-            if (ships[i].FieldsUndamaged == 0)
-            {
-                position = [.. ships[i].Position];
-                ships.RemoveAt(i);
-
-                break;
-            }
-        }
-
-        if (leftPlayer)
-            _leftPlayerShips = [.. ships];
-        else
-            _rightPlayerShips = [.. ships];
+        foreach (Ship ship in leftPlayer ? _rightPlayerShips : _leftPlayerShips)
+            if (ship.Position.Contains(coordinate))
+                return [.. ship.Position];
 
         return position;
     }

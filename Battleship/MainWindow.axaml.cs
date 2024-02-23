@@ -50,7 +50,7 @@ public partial class MainWindow : Window
             return;
 
         AddFieldsToBoard(_leftBoardGrid, _leftBoardButtons);
-        AddFieldsToBoard(_rightBoardGrid, _rightBoardButtons);
+        AddFieldsToBoard(_rightBoardGrid, _rightBoardButtons, false);
 
         _leftPlayerInfo.Text = _platform.GetLeftBotName();
         _rightPlayerInfo.Text = _platform.GetRightBotName();
@@ -59,7 +59,7 @@ public partial class MainWindow : Window
         _rightBoardGrid.IsEnabled = false;
     }
 
-    private static void AddFieldsToBoard(Grid grid, Button[,] buttons)
+    private static void AddFieldsToBoard(Grid grid, Button[,] buttons, bool isLeftBoard = true)
     {
         for (int i = 0; i < Data.TABLE_SIZE; ++i)
         {
@@ -126,8 +126,10 @@ public partial class MainWindow : Window
             }
             case GameType.BotVersusBot:
             {
-                _leftBoardGrid.IsEnabled = false;
-                _rightBoardGrid.IsEnabled = false;
+                SetBoardClass(_leftBoardButtons, Data.NO_HOVER_CLICK_CLASS_NAME);
+                SetBoardClass(_rightBoardButtons, Data.NO_HOVER_CLICK_CLASS_NAME);
+                _leftBoardGrid.IsEnabled = true;
+                _rightBoardGrid.IsEnabled = true;
                 _leftPlayerInfo.Text = _platform.GetLeftBotName();
                 _rightPlayerInfo.Text = _platform.GetRightBotName();
 
@@ -157,46 +159,25 @@ public partial class MainWindow : Window
     {
         foreach (Coordinate coordinate in shipPositions)
         {
-            board[coordinate.X, coordinate.Y].Classes.Add("NoHoverClickEffect");
+            board[coordinate.X, coordinate.Y].Classes.Add(Data.NO_HOVER_CLICK_CLASS_NAME);
             board[coordinate.X, coordinate.Y].Background = new SolidColorBrush(Color.Parse(Data.SHIP_BACKGROUND_COLOR_HEX));
         }
     }
     
     private async Task BotVersusBotMatch()
     {
-        Coordinate coordinate;
-        FieldState fieldState;
-
+        await Task.Delay(Data.DELAY_BEFORE_GAME_START);
+        
         for (int i = 0; i < 100; ++i)
         {
-            (coordinate, fieldState) = _platform.BotNextMove(true, true);
-            /*
-            if (fieldState == FieldState.Destroyed)
-                MarkShipAsDestroyed(_rightBoardButtons);
-            else
-                ChangeFieldState(_rightBoardButtons, coordinate, fieldState);
-            //*/
-            ChangeFieldState(_rightBoardButtons, coordinate, fieldState);
-
-            //await Task.Delay(Data.BOT_DELAY_TIME_MS);
-
-            (coordinate, fieldState) = _platform.BotNextMove(false, true);
-            /*
-            if (fieldState == FieldState.Destroyed)
-                MarkShipAsDestroyed(_leftBoardButtons, false);
-            else
-                ChangeFieldState(_leftBoardButtons, coordinate, fieldState);
-            //*/
-            ChangeFieldState(_leftBoardButtons, coordinate, fieldState);
-
-            await Task.Delay(Data.BOT_DELAY_TIME_MS);
-
+            await BotMove(_rightBoardButtons, true, true);
+            await BotMove(_leftBoardButtons, false, true);
         }
     }
 
     private static void ChangeFieldState(Button[,] board, Coordinate coordinate, FieldState fieldState)
     {
-        board[coordinate.X, coordinate.Y].Classes.Add("NoHoverClickEffect");
+        board[coordinate.X, coordinate.Y].Classes.Add(Data.NO_HOVER_CLICK_CLASS_NAME);
         board[coordinate.X, coordinate.Y].IsEnabled = false;
 
         IBrush color = new SolidColorBrush(Color.Parse(Data.MISS_BACKGROUND_COLOR_HEX));
@@ -218,13 +199,36 @@ public partial class MainWindow : Window
         board[coordinate.X, coordinate.Y].Background = color;
     }
 
-    private void MarkShipAsDestroyed(Button[,] board, bool defaultLeft = true)
+    private void MarkShipAsDestroyed(Button[,] board, Coordinate hitCoordinate, bool defaultLeft = true)
     {
-        Coordinate[] coordinates = _platform.GetPositionOfDestroyedShipAndRemoveShip(defaultLeft);
+        Coordinate[] coordinates = _platform.GetPositionOfDestroyedShip(hitCoordinate, defaultLeft);
 
         foreach(Coordinate coordinate in coordinates)
         {
             ChangeFieldState(board, coordinate, FieldState.Destroyed);
         }
+    }
+
+    private async Task BotMove(Button[,] board, bool isLeftBot = true, bool botVersusBot = false)
+    {
+        Coordinate coordinate;
+        FieldState fieldState;
+
+        (coordinate, fieldState) = _platform.BotNextMove(isLeftBot, botVersusBot);
+        
+        if (fieldState == FieldState.Destroyed)
+            MarkShipAsDestroyed(board, coordinate, isLeftBot);
+        else
+            ChangeFieldState(board, coordinate, fieldState);
+        
+        ChangeFieldState(board, coordinate, fieldState);
+
+        await Task.Delay(Data.BOT_DELAY_TIME_MS);
+    }
+
+    private static void SetBoardClass(Button[,] board, string className)
+    {
+        foreach(Button button in board)
+            button.Classes.Add(className);
     }
 }
