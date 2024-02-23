@@ -166,12 +166,29 @@ public partial class MainWindow : Window
     
     private async Task BotVersusBotMatch()
     {
+        if (_leftPlayerInfo == null
+            || _rightPlayerInfo == null)
+            return;
+
         await Task.Delay(Data.DELAY_BEFORE_GAME_START);
         
-        for (int i = 0; i < 100; ++i)
+        for (int i = 0; i < Data.MAX_NUMBER_OF_TURNS; ++i)
         {
             await BotMove(_rightBoardButtons, true, true);
+
+            if (_platform.GameFinished())
+            {
+                _leftPlayerInfo.Text += Data.WINNER;
+                break;
+            }
+
             await BotMove(_leftBoardButtons, false, true);
+
+            if (_platform.GameFinished())
+            {
+                _rightPlayerInfo.Text += Data.WINNER;
+                break;
+            }
         }
     }
 

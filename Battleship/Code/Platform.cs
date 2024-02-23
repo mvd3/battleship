@@ -101,6 +101,9 @@ public class Platform
         } else
             board[coordinate.X, coordinate.Y] = fieldState;
 
+        if (IsGameFinished(ships))
+            _currentlyPlaying = false;
+
         return (coordinate, fieldState);
     }
     
@@ -123,6 +126,11 @@ public class Platform
                 return [.. ship.Position];
 
         return position;
+    }
+
+    public bool GameFinished()
+    {
+        return !_currentlyPlaying;
     }
 
     private Ship[] ArrangeShipsOnBoard()
@@ -219,5 +227,19 @@ public class Platform
             X = 0,
             Y = 0
         };
+    }
+
+    private bool IsGameFinished(Ship[] ships)
+    {
+        bool finished = true;
+
+        foreach (Ship ship in ships)
+            if (ship.FieldsUndamaged > 0)
+            {
+                finished = false;
+                break;
+            }
+
+        return finished;
     }
 }
