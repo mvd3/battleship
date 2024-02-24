@@ -4,7 +4,7 @@ public static class Data
 {
     public const int TABLE_SIZE = 10;
     public const int NUMBER_OF_SHIPS = 5;
-    public const int BOT_DELAY_TIME_MS = 100;
+    public const int BOT_DELAY_TIME_MS = 500;
     public const int DELAY_BEFORE_GAME_START = 1000;
     public const int MAX_NUMBER_OF_TURNS = 100;
     public const string NO_HOVER_CLICK_CLASS_NAME = "NoHoverClickEffect";

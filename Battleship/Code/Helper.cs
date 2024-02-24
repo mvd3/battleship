@@ -7,7 +7,8 @@ public enum GameType
 {
     PlayerVersusLeftBot,
     PlayerVersusRightBot,
-    BotVersusBot
+    BotVersusBot,
+    None
 };
 
 public enum FieldState

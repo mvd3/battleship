@@ -109,6 +109,49 @@ public class Platform
 
         return (coordinate, fieldState);
     }
+
+    public FieldState PlayerNextMove(Coordinate coordinate)
+    {
+        FieldState fieldState = FieldState.Missed;
+
+        bool isHit = false;
+
+        foreach (Ship ship in _rightPlayerShips)
+        {
+            if (ship.Position.Contains(coordinate))
+            {
+                isHit = true;
+                break;
+            }
+        }
+
+        if (isHit)
+        {
+            fieldState = FieldState.Damaged;
+
+            foreach (Ship ship in _rightPlayerShips)
+                if (ship.Position.Contains(coordinate))
+                {
+                    if (--ship.FieldsUndamaged == 0)
+                    {
+                        fieldState = FieldState.Destroyed;
+
+                        foreach (Coordinate shipCoordinate in ship.Position)
+                            _rightBoard[shipCoordinate.X, shipCoordinate.Y] = fieldState;
+                    }
+                    else
+                        _rightBoard[coordinate.X, coordinate.Y] = fieldState;
+
+                    break;
+                }
+        } else
+            _rightBoard[coordinate.X, coordinate.Y] = fieldState;
+
+        if (IsGameFinished(_rightPlayerShips))
+            _currentlyPlaying = false;
+
+        return fieldState;
+    }
     
     public Coordinate[] GetAllShipPositions(bool defaultLeft = true)
     {
@@ -134,6 +177,11 @@ public class Platform
     public bool GameFinished()
     {
         return !_currentlyPlaying;
+    }
+
+    public bool IsRightBoardFieldEmpty(Coordinate coordinate)
+    {
+        return _rightBoard[coordinate.X, coordinate.Y] == FieldState.Empty;
     }
 
     private Ship[] ArrangeShipsOnBoard()

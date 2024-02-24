@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -15,17 +16,20 @@ public partial class MainWindow : Window
     private TextBlock? _leftPlayerInfo, _rightPlayerInfo;
     private Button[,] _leftBoardButtons, _rightBoardButtons;
     private Button? _versusLeftBot, _versusRightBot, _botVersusBot;
-    
+    private GameType _currentGameType;
+
     public MainWindow()
     {
         InitializeComponent();
 
         _leftBoardButtons = new Button[Data.TABLE_SIZE, Data.TABLE_SIZE];
         _rightBoardButtons = new Button[Data.TABLE_SIZE, Data.TABLE_SIZE];
+        _currentGameType = GameType.None;
 
         _platform = new();
 
         DrawBoards();
+        GenerateClickHandlers();
     }
 
     private void InitializeComponent()
@@ -54,9 +58,6 @@ public partial class MainWindow : Window
 
         _leftPlayerInfo.Text = _platform.GetLeftBotName();
         _rightPlayerInfo.Text = _platform.GetRightBotName();
-
-        _leftBoardGrid.IsEnabled = false;
-        _rightBoardGrid.IsEnabled = false;
     }
 
     private static void AddFieldsToBoard(Grid grid, Button[,] buttons, bool isLeftBoard = true)
@@ -79,6 +80,9 @@ public partial class MainWindow : Window
                     BorderBrush = new SolidColorBrush(Color.Parse(Data.BORDER_COLOR_HEX)),
                     BorderThickness = new(1)
                 };
+
+                if (isLeftBoard)
+                    button.Classes.Add(Data.NO_HOVER_CLICK_CLASS_NAME);
 
                 Grid.SetRow(button, i);
                 Grid.SetColumn(button, j);
@@ -111,6 +115,7 @@ public partial class MainWindow : Window
         _versusLeftBot.IsEnabled = false;
         _versusRightBot.IsEnabled = false;
         _botVersusBot.IsEnabled = false;
+        _currentGameType = mode;
 
         SetShipsOnField(_leftBoardButtons, _platform.GetAllShipPositions());
 
@@ -119,17 +124,16 @@ public partial class MainWindow : Window
             case GameType.PlayerVersusLeftBot:
             case GameType.PlayerVersusRightBot:
             {
-                _rightBoardGrid.IsEnabled = true;
+                SetBoardClass(_leftBoardButtons, Data.NO_HOVER_CLICK_CLASS_NAME);
                 _leftPlayerInfo.Text = Data.HUMAN_PLAYER;
                 _rightPlayerInfo.Text = mode == GameType.PlayerVersusLeftBot ? _platform.GetLeftBotName() : _platform.GetRightBotName();
+
                 break;
             }
             case GameType.BotVersusBot:
             {
                 SetBoardClass(_leftBoardButtons, Data.NO_HOVER_CLICK_CLASS_NAME);
                 SetBoardClass(_rightBoardButtons, Data.NO_HOVER_CLICK_CLASS_NAME);
-                _leftBoardGrid.IsEnabled = true;
-                _rightBoardGrid.IsEnabled = true;
                 _leftPlayerInfo.Text = _platform.GetLeftBotName();
                 _rightPlayerInfo.Text = _platform.GetRightBotName();
 
@@ -190,6 +194,8 @@ public partial class MainWindow : Window
                 break;
             }
         }
+
+        _currentGameType = GameType.None;
     }
 
     private static void ChangeFieldState(Button[,] board, Coordinate coordinate, FieldState fieldState)
@@ -232,20 +238,96 @@ public partial class MainWindow : Window
         FieldState fieldState;
 
         (coordinate, fieldState) = _platform.BotNextMove(isLeftBot, botVersusBot);
+
+        await Task.Delay(Data.BOT_DELAY_TIME_MS);
         
         if (fieldState == FieldState.Destroyed)
             MarkShipAsDestroyed(board, coordinate, isLeftBot);
         else
             ChangeFieldState(board, coordinate, fieldState);
-        
-        ChangeFieldState(board, coordinate, fieldState);
-
-        await Task.Delay(Data.BOT_DELAY_TIME_MS);
     }
 
     private static void SetBoardClass(Button[,] board, string className)
     {
         foreach(Button button in board)
             button.Classes.Add(className);
+    }
+
+    private async void SelectFieldHandler(object? sender, RoutedEventArgs args)
+    {
+        if (_leftPlayerInfo == null
+            || _rightPlayerInfo == null
+            || _rightBoardGrid == null
+            || args.Source == null)
+            return;
+
+        if (_currentGameType == GameType.None
+            || _currentGameType == GameType.BotVersusBot)
+            return;
+
+        Button button = (Button) args.Source;
+        int fieldNumber = int.Parse(button.Tag?.ToString() ?? "00");
+        int x = fieldNumber / Data.TABLE_SIZE;
+        int y = fieldNumber % Data.TABLE_SIZE;
+
+        if (!_platform.IsRightBoardFieldEmpty(new Coordinate()
+            {
+                X = x,
+                Y = y
+            }))
+            return;
+
+        _rightBoardGrid.IsEnabled = false;
+
+        Coordinate coordinate = new()
+        {
+            X = x,
+            Y = y
+        };
+
+        FieldState fieldState = _platform.PlayerNextMove(coordinate);
+
+        if (fieldState == FieldState.Destroyed)
+            MarkShipAsDestroyed(_rightBoardButtons, coordinate);
+        else
+            ChangeFieldState(_rightBoardButtons, coordinate, fieldState);
+
+        if (_platform.GameFinished())
+        {
+            _leftPlayerInfo.Text += Data.WINNER;
+            EndPlayerVersusBotGame();
+            return;
+        }
+
+        await BotMove(_leftBoardButtons, _currentGameType == GameType.PlayerVersusLeftBot, false);
+
+        if (_platform.GameFinished())
+        {
+            _rightPlayerInfo.Text += Data.WINNER;
+            EndPlayerVersusBotGame();
+            return;
+        }
+
+        _rightBoardGrid.IsEnabled = true;
+    }
+
+    private void GenerateClickHandlers()
+    {
+        for (int i = 0; i < Data.TABLE_SIZE; ++i)
+            for (int j = 0; j < Data.TABLE_SIZE; ++j)
+            {
+                _rightBoardButtons[i, j].Tag = $"{i}{j}";
+                _rightBoardButtons[i, j].Click += SelectFieldHandler;
+            }
+    }
+
+    private void EndPlayerVersusBotGame()
+    {
+        if (_rightBoardGrid == null)
+            return;
+
+        _currentGameType = GameType.None;
+
+        _rightBoardGrid.IsEnabled = true;
     }
 }
