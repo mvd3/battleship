@@ -62,7 +62,7 @@ public class Platform
         FieldState[,] board = botVersusBot && isLeftBot ? _rightBoard : _leftBoard;
         Ship[] ships = botVersusBot && isLeftBot ? _rightPlayerShips : _leftPlayerShips;
 
-        Coordinate coordinate = isLeftBot ? _leftBot.NextPosition(board, ships) : _rightBot.NextPosition(board, ships);
+        Coordinate coordinate = isLeftBot ? _leftBot.NextPosition(board) : _rightBot.NextPosition(board);
         FieldState fieldState = FieldState.Missed;
 
         if (board[coordinate.X, coordinate.Y] != FieldState.Empty)

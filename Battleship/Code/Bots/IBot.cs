@@ -6,5 +6,5 @@ namespace Battleship.Platform.Bot;
 public interface IBot
 {
     public string GetName();
-    public Coordinate NextPosition(in FieldState[,] board, in Ship[] ships);
+    public Coordinate NextPosition(in FieldState[,] board);
 }
