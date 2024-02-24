@@ -6,6 +6,11 @@
 
 ## Покретање
 
+0. Требате имати [*Microsoft SDK*](https://dotnet.microsoft.com/en-us/download) на вашем рачунару инсталиран.
+1. Преузмите репозиторијум: `git clone https://github.com/mvd3/battleship.git`
+2. Уђите у фолдер са пројектом: `cd battleship\Battleship`
+3. Покрените апликацију са: `dotnet run`
+
 ## Спецификација
 
 ### Правила игре и њихова реализација
