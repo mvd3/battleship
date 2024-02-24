@@ -40,6 +40,11 @@ public class NBot(string name) : IBot
         return coordinate;
     }
 
+    public void NewGame()
+    {
+        _shipsSailing = [5, 4, 3, 3, 2];
+    }
+
     private void SeekDestroyedShips(in FieldState[,] board)
     {
         for (int i = 0; i < 10; ++i)
@@ -181,62 +186,68 @@ public class NBot(string name) : IBot
             Y = 0
         };
 
+        List<Coordinate> allEmptyFields = GetAllEmptyFields(in board);
+        int nextField;
+
         if (_missedPositions.Count == 0)
         {
-            List<Coordinate> freeFields = [];
-
-            for (int i = 0; i < Data.TABLE_SIZE; ++i)
-                for (int j = 0; j < Data.TABLE_SIZE; ++j)
-                    if (board[i, j] == FieldState.Empty)
-                        freeFields.Add(new Coordinate
-                        {
-                            X = i,
-                            Y = j
-                        });
-
-            int nextField = _randomNumberGenerator.Next(freeFields.Count);
-
-            return freeFields.ElementAt(nextField);
+            nextField = _randomNumberGenerator.Next(allEmptyFields.Count);
+            return allEmptyFields.ElementAt(nextField);
         }
 
         int[] spaningFactorX = [-1, 0, 1, 0];
         int[] spaningFactorY = [0, 1, 0, -1];
-        bool clearSight;
-        int nextX = 0;
-        int nextY = 0;
+        int nextX, nextY;
 
         foreach (int biggestShip in _shipsSailing)
         {
+            allEmptyFields = GetAllEmptyFields(in board);
+
             foreach (Coordinate coordinate in _missedPositions)
             {
                 for (int i = 0; i < 4; ++i)
-                {
-                    clearSight = true;
-
-                    for (int j = 1; j <= biggestShip; ++j)
+                    for (int j = 1; j < biggestShip; ++j)
                     {
-                        nextX = coordinate.X + j * spaningFactorX[i];
-                        nextY = coordinate.Y + j * spaningFactorY[i];
-
+                        nextX = coordinate.X + spaningFactorX[i] * j;
+                        nextY = coordinate.Y + spaningFactorY[i] * j;
+                        
                         if (nextX >= 0 && nextX < 10
-                            && nextY >= 0 && nextY < 10
-                            && board[nextX, nextY] == FieldState.Empty)
-                            continue;
-
-                        clearSight = false;
-                        break;
+                            && nextY >= 0 && nextY < 10)
+                            allEmptyFields.Remove(new Coordinate()
+                            {
+                                X = nextX,
+                                Y = nextY
+                            });
                     }
+            }
 
-                    if (clearSight)
-                        return new Coordinate()
-                        {
-                            X = nextX,
-                            Y = nextY
-                        };
-                }
+            if (allEmptyFields.Count > 0)
+            {
+                int nextElement = _randomNumberGenerator.Next(allEmptyFields.Count);
+                return allEmptyFields.ElementAt(nextElement);
             }
         }
 
+        allEmptyFields = GetAllEmptyFields(in board);
+        nextField = _randomNumberGenerator.Next(allEmptyFields.Count);
+        bestCoordinate = allEmptyFields.ElementAt(nextField);
+
         return bestCoordinate;
+    }
+
+    private List<Coordinate> GetAllEmptyFields(in FieldState[,] board)
+    {
+        List<Coordinate> allEmptyFields = [];
+
+        for (int i = 0; i < 10; ++i)
+            for (int j = 0; j < 10; ++j)
+                if (board[i, j] == FieldState.Empty)
+                    allEmptyFields.Add(new Coordinate()
+                    {
+                        X = i,
+                        Y = j
+                    });
+
+        return allEmptyFields;
     }
 }

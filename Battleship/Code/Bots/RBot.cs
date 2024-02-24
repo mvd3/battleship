@@ -41,4 +41,6 @@ public class RBot(string name) : IBot
 
         return coordinate;
     }
+
+    public void NewGame() {}
 }

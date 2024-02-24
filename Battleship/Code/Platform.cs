@@ -44,6 +44,9 @@ public class Platform
         _leftPlayerShips = ArrangeShipsOnBoard();
         _rightPlayerShips = ArrangeShipsOnBoard();
 
+        _leftBot.NewGame();
+        _rightBot.NewGame();
+
         _currentlyPlaying = true;
     }
 
