@@ -11,7 +11,7 @@ public class Platform
     private FieldState[,] _leftBoard, _rightBoard;
     private Ship[] _leftPlayerShips, _rightPlayerShips;
     private Random _randomNumberGenerator;
-    private NBot _leftBot, _rightBot;
+    private IBot _leftBot, _rightBot;
     private readonly int[] _shipSize;
     private readonly int[] _orientationSpaningFactorX;
     private readonly int[] _orientationSpaningFactorY;
@@ -24,8 +24,8 @@ public class Platform
         _leftPlayerShips = new Ship[Data.NUMBER_OF_SHIPS];
         _rightPlayerShips = new Ship[Data.NUMBER_OF_SHIPS];
         _randomNumberGenerator = new();
-        _leftBot = new(Data.LEFT_DEFAULT_PLAYER);
-        _rightBot = new(Data.RIGHT_DEFAULT_PLAYER);
+        _leftBot = new NBot("Обреновићи");
+        _rightBot = new NBot("Карађорђевићи");
         _currentlyPlaying = false;
         _shipSize = [5, 4, 3, 3, 2];
         _orientationSpaningFactorX = [-1, 0, 1, 0];

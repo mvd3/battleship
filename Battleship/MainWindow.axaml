@@ -118,6 +118,7 @@
                         BorderThickness="0, 0, 0, 1">
                     <TextBlock x:Name="LeftPlayerInfo"
                                 Foreground="White"
+                                FontSize="22"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center">
                     </TextBlock>
@@ -133,6 +134,7 @@
                         BorderThickness="0, 0, 0, 1">
                     <TextBlock x:Name="RightPlayerInfo"
                                 Foreground="White"
+                                FontSize="22"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center">
                     </TextBlock>

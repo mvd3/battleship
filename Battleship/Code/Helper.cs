@@ -37,9 +37,3 @@ public class Ship
         Position = [];
     }
 }
-
-public class Field
-{
-    public FieldState State { get; set; }
-    public bool IsAvailable { get; set;} // For shooting
-}

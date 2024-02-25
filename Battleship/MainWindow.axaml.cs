@@ -115,16 +115,19 @@ public partial class MainWindow : Window
         _versusLeftBot.IsEnabled = false;
         _versusRightBot.IsEnabled = false;
         _botVersusBot.IsEnabled = false;
+        _leftPlayerInfo.Foreground = new SolidColorBrush(Colors.White);
+        _rightPlayerInfo.Foreground = new SolidColorBrush(Colors.White);
         _currentGameType = mode;
 
         SetShipsOnField(_leftBoardButtons, _platform.GetAllShipPositions());
+        SetBoardClass(_leftBoardButtons, Data.NO_HOVER_CLICK_CLASS_NAME);
+
 
         switch (mode)
         {
             case GameType.PlayerVersusLeftBot:
             case GameType.PlayerVersusRightBot:
             {
-                SetBoardClass(_leftBoardButtons, Data.NO_HOVER_CLICK_CLASS_NAME);
                 _leftPlayerInfo.Text = Data.HUMAN_PLAYER;
                 _rightPlayerInfo.Text = mode == GameType.PlayerVersusLeftBot ? _platform.GetLeftBotName() : _platform.GetRightBotName();
 
@@ -132,7 +135,6 @@ public partial class MainWindow : Window
             }
             case GameType.BotVersusBot:
             {
-                SetBoardClass(_leftBoardButtons, Data.NO_HOVER_CLICK_CLASS_NAME);
                 SetBoardClass(_rightBoardButtons, Data.NO_HOVER_CLICK_CLASS_NAME);
                 _leftPlayerInfo.Text = _platform.GetLeftBotName();
                 _rightPlayerInfo.Text = _platform.GetRightBotName();
@@ -183,6 +185,8 @@ public partial class MainWindow : Window
             if (_platform.GameFinished())
             {
                 _leftPlayerInfo.Text += Data.WINNER;
+                _leftPlayerInfo.Foreground = new SolidColorBrush(Colors.Green);
+                _rightPlayerInfo.Foreground = new SolidColorBrush(Colors.Red);
                 break;
             }
 
@@ -191,6 +195,8 @@ public partial class MainWindow : Window
             if (_platform.GameFinished())
             {
                 _rightPlayerInfo.Text += Data.WINNER;
+                _leftPlayerInfo.Foreground = new SolidColorBrush(Colors.Red);
+                _rightPlayerInfo.Foreground = new SolidColorBrush(Colors.Green);
                 break;
             }
         }
@@ -295,6 +301,8 @@ public partial class MainWindow : Window
         if (_platform.GameFinished())
         {
             _leftPlayerInfo.Text += Data.WINNER;
+            _leftPlayerInfo.Foreground = new SolidColorBrush(Colors.Green);
+            _rightPlayerInfo.Foreground = new SolidColorBrush(Colors.Red);
             EndPlayerVersusBotGame();
             return;
         }
@@ -304,6 +312,8 @@ public partial class MainWindow : Window
         if (_platform.GameFinished())
         {
             _rightPlayerInfo.Text += Data.WINNER;
+            _leftPlayerInfo.Foreground = new SolidColorBrush(Colors.Red);
+            _rightPlayerInfo.Foreground = new SolidColorBrush(Colors.Green);
             EndPlayerVersusBotGame();
             return;
         }

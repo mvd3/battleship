@@ -7,6 +7,5 @@ public interface IBot
 {
     public string GetName();
     public Coordinate NextPosition(in FieldState[,] board);
-
     public void NewGame();
 }

@@ -14,8 +14,8 @@ public static class Data
     public const string DAMAGED_SHIP_BACKGROUND_COLOR_HEX = "#FC6736";
     public const string MISS_BACKGROUND_COLOR_HEX = "#1F2544";
     public const string SHIP_BACKGROUND_COLOR_HEX = "#EAD7BB";
-    public const string LEFT_DEFAULT_PLAYER = "Обреновићи";
-    public const string RIGHT_DEFAULT_PLAYER = "Карађорђевићи";
+    public const string LEFT_DEFAULT_PLAYER = "Леви Бот";
+    public const string RIGHT_DEFAULT_PLAYER = "Десни Бот";
     public const string HUMAN_PLAYER = "Играч";
     public const string WINNER = " - Победник";
 }
